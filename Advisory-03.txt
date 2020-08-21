@@ -1,0 +1,188 @@
+/*
+--------------------------------------------------------
+[N]eo [S]ecurity [T]eam [NST]® - Advisory #03 - 01/01/05
+--------------------------------------------------------
+Program:  BIND (Berkeley Internet Name Domain)
+Homepage:  http://www.isc.org/
+Vulnerable Versions: BIND 9.3.0
+Risk: High!!
+Impact: A lot of
+        Buffer OverFlows & Format Bugs
+---------------------------------------------------------
+
+- Description
+---------------------------------------------------------
+BIND (Berkeley Internet Name Domain) is an implementation
+of the Domain Name System (DNS) protocols and provides an
+openly redistributable reference implementation of the major
+components of the Domain Name System.
+
+The BIND DNS Server is used on the vast majority of name
+serving machines on the Internet, providing a robust and
+stable architecture on top of which an organization's naming
+architecture can be built. The resolver library included in
+the BIND distribution provides the standard APIs for translation
+between domain names and Internet addresses and is intended to be
+linked with applications requiring name service.
+
+- Details
+---------------------------------------------------------
+lib\bind\bsd\strdup.c
+-strdup.c-
+strcpy(dst, src);
+-strdup.c-
+
+We could do an -=Overflow overthere so it'll be better
+-strdup.c-
+strncpy(dst,sizeof(dst), src);
+-strdup.c-
+
+============================================================================
+
+lib\bind\dst\dst_api.c [Line 435]
+-dst_api.c-
+if ((fp = dst_s_fopen(file, "w", 0600)) != NULL) {
+		int nn;
+		if ((nn = fwrite(encoded_block, 1, len, fp)) != len) {
+			EREPORT(("dst_write_private_key(): Write failure on %s %d != %d errno=%d\n",
+				 file, len, nn, errno));
+			return (-5);
+		}
+-dst_api.c-
+We do not know what size len it is
+so it'll be better
+
+-dst_api.c-
+if ((fp = dst_s_fopen(file, "w", 0600)) != NULL) {
+		int nn;
+		if ((nn = fwrite(encoded_block, 1,sizeof(len), fp)) != len) {
+			EREPORT(("dst_write_private_key(): Write failure on %s %d != %d errno=%d\n",
+				 file, len, nn, errno));
+			return (-5);
+		}
+-dst_api.c-
+
+Also a  strcpy function in wich it'll be better strncpy
+
+strcpy(keyname, in_keyname);
+
+===========================================================================
+
+lib\bind\dst\support.c [Line 317]
+
+
+-support.c-
+if (*dst_path != '\0') {
+		strcpy(pathname, dst_path);
+		plen -= strlen(pathname);
+	}
+-support.c-
+
+Overflow in this case.
+
+Patch
+
+-support.c-
+if (*dst_path != '\0') {
+		strncpy(pathname, dst_path, sizeof(pathname) - 1);
+		plen -= strlen(pathname);
+	}
+-support.c-
+
+===========================================================================
+
+lib\bind\inet\inet_cidr_ntop.c
+-inet_cidr_ntop.c- [Line 257]
+	if ((size_t)(tp - tmp) > size) {
+		errno = EMSGSIZE;
+		return (NULL);
+	}
+	strcpy(dst, tmp);
+	return (dst);
+}
+
+
+-inet_cidr_ntop.c-
+
+OverFlow.
+We don't know the exactly size of dst in memory.
+
+Patch
+-inet_cidr_ntop.c-
+	if ((size_t)(tp - tmp) > size) {
+		errno = EMSGSIZE;
+		return (NULL);
+	}
+	strncpy(dst, tmp, sizeof(tmp) - 1);
+	return (dst);
+}
+-inet_cidr_ntop.c-
+
+The same thing in lib\bind\inet\inet_net_ntop.c        [Line 270]
+The same thing in lib\bind\inet\inet_neta.c            [line 80]
+The same thing in lib\bind\inet\inet_ntoa.c            [line 59]
+The same thing in lib\bind\inet\inet_ntop.c            [line 103 & 201]
+
+The same thing in lib\bind\nameser\ns_samedomain.c     [line 173]
+The same thing in lib\bind\nameser\ns_ttl.c            [line 155]
+
+The same thing in lib\bind\resolv\res_debug.c          [Line 339]
+The same thing in lib\bind\resolv\res_findzonecut.c    [Line 368]
+The same thing in lib\bind\resolv\res_init.c           [Line 213 & 214]
+
+The same thing in lib\bind9\getaddresses.c [Line 91]
+
+Much & Much More Bugs plz Fix Them.
+
+===========================================================================
+
+- Exploit
+--------------------------------------------------------
+Sorry not this time.
+If you want to do one & you don't know how, contact me.
+
+
+- Tested
+---------------------------------------------------------
+I have done a lot of testing on this. xD
+Slackware 10.0
+ 
+- Solutions
+--------------------------------------------------------
+Not Yet or i don't know xD
+
+- References
+--------------------------------------------------------
+http://neosecurityteam.net/Advisories/Advisory-03.txt
+
+
+- Credits
+-------------------------------------------------
+Discovered by HaCkZaTaN <hck_zatan@hotmail.com>
+
+[N]eo [S]ecurity [T]eam [NST]® - http://neosecurityteam.net/
+
+Got Questions? http://neosecurityteam.net/
+
+Irc.InfoGroup.cl #neosecurityteam
+
+- Greets
+--------------------------------------------------------
+           Paisterist
+           T0wn3r
+           LINUX
+	   Heap
+           Nitrous
+           CrashCool
+           eL_mEsIaS
+           Makoki
+           KingMetal
+
+           And my Colombian people
+
+	@@@@'''@@@@'@@@@@@@@@'@@@@@@@@@@@
+	'@@@@@''@@'@@@''''''''@@''@@@''@@
+	'@@'@@@@@@''@@@@@@@@@'''''@@@
+	'@@'''@@@@'''''''''@@@''''@@@
+	@@@@''''@@'@@@@@@@@@@''''@@@@@
+*/

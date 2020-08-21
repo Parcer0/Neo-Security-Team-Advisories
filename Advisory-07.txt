@@ -1,0 +1,126 @@
+/*
+--------------------------------------------------------
+[N]eo [S]ecurity [T]eam [NST]® - Advisory #07 - 25/02/05
+--------------------------------------------------------
+Program:  phpBB 2.0.11
+Homepage:  http://www.phpbb.com
+Vulnerable Versions: phpBB 2.0.11 & Lower versions
+Risk: Low Risk
+Impact: Full path disclosure
+
+      phpBB 2.0.11 Full path disclosure
+---------------------------------------------------------
+
+- Description
+---------------------------------------------------------
+phpBB is an Open Source project that is developed of a big comunnity of programmers. It has suport for a lot of databases, like Oracle, MSSQL, MySql, PostGres, etc, and is one of the more useds precompilateds packegs.
+
+- Tested
+---------------------------------------------------------
+I tested this bug in localhost and an other lot of phpBB forums.
+
+- Explotation
+---------------------------------------------------------
+The bug is in the function phpbb_clean_username and, in 
+consequence, all variables that are cleaned by this function and are specified by the user are explotables. This is a full path disclosure vulnerability. Here is the code:
+
+function phpbb_clean_username($username)
+{
+	$username = htmlspecialchars(rtrim(trim($username), "\\"));
+	$username = substr(str_replace("\\'", "'", $username), 0, 25);
+	$username = str_replace("'", "\\'", $username);
+
+	return $username;
+}
+
+The bug is the second line of the function. If we put a 
+value like "\()\()\()\()\()\()\()", the function returns an error like this:
+
+Error in obtaining userdata
+
+DEBUG MODE
+
+SQL Error : 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''\\()\\()\\()\\()\\()\\()\'' at line 3
+
+SELECT user_id, username, user_password, user_active, user_level FROM phpbb_users WHERE username = '\\()\\()\\()\\()\\()\\()\'
+
+Line : 65
+File : c:\appserv\www\nst\login.php
+
+An example of vulnerable files are login.php (in his username variable), search.php (in the search_autor variable), etc.
+
+- Exploit
+---------------------------------------------------------
+The value that is going to be cleaned by the function phpbb_clean_username has to be like this:
+\aa\aa\aa\aa\aa\aa\aa
+
+The lenght of this string has to be around the 20 characters. The code add slashes to the string, the lenght exceeds the 25 characters and the database generates the SQL error.
+ 
+- Solutions
+--------------------------------------------------------
+We have to update the forum but we can change the vulnerable line:
+
+Vulnerable:
+	$username = substr(str_replace("\\'", "'",$username), 0, 25);
+
+Fixed: 
+	$username = phpbb_rtrim($username, "\\");
+
+Function phpbb_rtrim():
+
+function phpbb_rtrim($str, $charlist = false)
+{
+	if ($charlist === false)
+	{
+		return rtrim($str);
+	}
+	
+	$php_version = explode('.', PHP_VERSION);
+
+	// php version < 4.1.0
+	if ((int) $php_version[0] < 4 || ((int) $php_version[0] == 4 && (int) $php_version[1] < 1))
+	{
+		while ($str{strlen($str)-1} == $charlist)
+		{
+			$str = substr($str, 0, strlen($str)-1);
+		}
+	}
+	else
+	{
+		$str = rtrim($str, $charlist);
+	}
+
+	return $str;
+}
+
+- References
+--------------------------------------------------------
+http://neossecurity.net/Advisories/Advisory-07.txt
+
+
+- Credits
+-------------------------------------------------
+Discovered by Paisterist <paisterist.nst[at]gmail[dot]com>
+
+[N]eo [S]ecurity [T]eam [NST]® - http://neossecurity.net/
+
+Any Question? paisterist.nst[at]gmail[dot]com
+
+Irc.InfoGroup.cl #neosecurityteam
+
+- Greetz
+--------------------------------------------------------
+           Hackzatan
+           T0wn3r
+	   Crashcool
+           Daemon21
+           Merlin
+           Maxx
+	   Arcanhell
+
+	@@@@'''@@@@'@@@@@@@@@'@@@@@@@@@@@
+	'@@@@@''@@'@@@''''''''@@''@@@''@@
+	'@@'@@@@@@''@@@@@@@@@'''''@@@
+	'@@'''@@@@'''''''''@@@''''@@@
+	@@@@''''@@'@@@@@@@@@@''''@@@@@
+*/

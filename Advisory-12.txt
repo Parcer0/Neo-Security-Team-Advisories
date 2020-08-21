@@ -1,0 +1,227 @@
+/*
+--------------------------------------------------------
+[N]eo [S]ecurity [T]eam [NST]® - Advisory #12 - 20/03/05
+--------------------------------------------------------
+Program:  Ciamos
+Homepage:  http://www.ciamos.com
+Vulnerable Versions: Ciamos 0.9.2 RC1 & lowers
+Risk: Low!!
+Impact: Path Disclosure
+
+            -==Ciamos Path Disclosure ==-
+---------------------------------------------------------
+
+- Description
+---------------------------------------------------------
+Ciamos is an Extensible Content Management System based
+on the popular E-Xoops CMS. Ciamos is written in PHP and
+uses a MySQL database (but it is part of the roadmap to
+expand the database usage with a database abstraction layer).
+Is is designed to be robust, effective and simple to use.
+Ciamos is intended for personal or organisational use where
+the priority is to get content presented simply and quickly.
+
+- Tested
+---------------------------------------------------------
+Ciamo's webpage & Localhost
+I have done minimal testing on this
+
+- Explotation & solutions
+---------------------------------------------------------
+
+http://host/class/dbbackup.php
+http://host/class/sysform/formbuttontray.php << same thing as the one upthere
+http://host/class/sysform/formcheckbox.php << same thing as the one upthere
+http://host/class/sysform/formdatetime.php << same thing as the one upthere
+http://host/class/sysform/formdhtmltextarea.php << same thing as the one upthere
+http://host/class/sysform/formelementtable.php << same thing as the one upthere
+http://host/class/sysform/formelementtray.php << same thing as the one upthere
+http://host/class/sysform/formfile.php << same thing as the one upthere
+http://host/class/sysform/formhidden.php << same thing as the one upthere
+http://host/class/sysform/formhtmltray.php << same thing as the one upthere
+http://host/class/sysform/formlabel.php << same thing as the one upthere
+http://host/class/sysform/formradio.php << same thing as the one upthere
+http://host/class/sysform/formselectcountry.php << same thing as the one upthere
+http://host/class/sysform/formselectgroup.php << same thing as the one upthere
+http://host/class/sysform/formselectlang.php << same thing as the one upthere
+http://host/class/sysform/formselectmodule.php  << same thing as the one upthere
+http://host/class/sysform/formselecttheme.php << same thing as the one upthere
+http://host/class/sysform/formselecttimezone.php << same thing as the one upthere
+http://host/class/sysform/simpleform.php << same thing as the one upthere
+http://host/class/sysform/formtextarea.php << same thing as the one upthere
+http://host/class/sysform/formtext.php << same thing as the one upthere
+http://host/class/sysform/tableform.php << same thing as the one upthere
+http://host/class/sysform/themeform.php << same thing as the one upthere
+http://host/class/syshandler/banned.php << same thing as the one upthere
+http://host/class/syshandler/error.php << same thing as the one upthere
+http://host/include/footer.php << Undefined function
+http://www.ciamos.com/include/header.php << Undefined function
+http://www.ciamos.com/include/registerform.php
+
+Fatal error: Class dbbackup: Cannot inherit from undefined class database in /home/.eaton/ciamos/ciamos.com/class/dbbackup.php on line 18
+
+class/dbbackup.php: 17 - 19
+-==code==-
+if ( defined('CIAMOS_DBBACKUP_INCLUDED') ) {
+    return;
+}
+-==/code==-
+
+[:: ============================================ ::]
+Other Bug
+
+http://host/class/sysblock.php
+
+Fatal error: Class sysblock: Cannot inherit from undefined class sysobject in /home/.eaton/ciamos/ciamos.com/class/sysblock.php on line 30
+
+Line 30
+-==/code==-
+class SysBlock extends SysObject
+-==/code==-
+
+
+
+[:: ============================================ ::]
+Other Bugs
+
+http://host/clean_mainfile.php << "include/common.php'
+http://host/class/syspm.php
+http://host/class/sysstory.php
+http://host/class/groupaccess.php
+http://host/class/syscomments.php
+http://host/class/sysformloader.php
+http://host/class/sysgroup.php
+http://host/class/sysblock.php
+http://host/class/systopic.php
+http://host/class/sysuser.php
+http://host/class/database/mysql.php
+http://host/class/database/pgsql.php
+http://host/class/sysform/formbutton.php
+http://host/class/sysform/formcheckbox.php
+http://host/class/sysform/formdhtmltextarea.php
+http://host/class/sysform/formelementtable.php
+http://host/class/sysform/formelementtray.php
+http://host/class/sysform/formfile.php
+http://host/class/sysform/formhidden.php
+http://host/class/sysform/formlabel.php
+http://host/class/sysform/formradio.php
+http://host/class/sysform/formselectcountry.php
+http://host/class/sysform/formselectgroup.php
+http://host/class/sysform/formselectlang.php
+http://host/class/sysform/formselectmodule.php
+http://host/class/sysform/formselecttheme.php
+http://host/class/sysform/formselecttimezone.php
+http://host/class/sysform/simpleform.php
+http://host/class/sysform/formtextarea.php
+http://host/class/sysform/formtext.php
+http://host/class/sysform/tableform.php
+http://host/include/commentform.inc.php
+http://host/include/footer.php
+http://www.ciamos.com/include/functions.php
+http://www.ciamos.com/include/registerform.php
+http://www.ciamos.com/include/syscodes.php
+
+quick patch 'class/file.php'
+
+It'll will come out something like:
+
+Warning: main(SYS_ROOT_PATH/class/sysobject.php): failed to open stream: No such file or directory in /home/.eaton/ciamos/ciamos.com/class/sysuser.php on line 17
+
+Warning: main(): Failed opening 'SYS_ROOT_PATH/class/sysobject.php' for inclusion (include_path='.:/usr/local/lib/php') in /home/.eaton/ciamos/ciamos.com/class/sysuser.php on line 17
+
+[:: ============================================ ::]
+Other Bug
+
+class/debug/debug_show.php
+
+ Error Number: 2 [Warning]
+
+on line 12
+-==code==-
+include_once("../../mainfile.php");
+-==/code==-
+
+on line 24
+-==code==-
+include_once("../../footer.php");
+-==/code==-
+
+[:: ============================================ ::]
+Other Bug
+
+http://host/include/commentform.inc.php
+
+Fatal error: Cannot instantiate non-existent class: syslists in /home/.eaton/ciamos/ciamos.com/include/commentform.inc.php on line 44
+
+-==code==-
+$lists    = new SysLists;
+-==/code==-
+
+[:: ============================================ ::]
+Other Bug
+
+http://www.ciamos.com/include/functions.php
+
+Warning: readdir(): supplied argument is not a valid Directory resource in /home/.eaton/ciamos/ciamos.com/include/functions.php on line 23
+
+Warning: closedir(): supplied argument is not a valid Directory resource in /home/.eaton/ciamos/ciamos.com/include/functions.php on line 34
+
+include/functions.php on line 23
+-==code==-
+while ( $file_name = readdir($path_id) ) {
+-==/code==-
+
+include/functions.php on line 34
+-==code==-
+closedir($path_id);
+-==/code==-
+
+
+[:: ============================================ ::]
+Other Bug
+
+Fatal error: Call to a member function on a non-object in /home/.eaton/ciamos/ciamos.com/include/searchform.php on line 12
+http://www.ciamos.com/include/searchform.php
+
+[:: ============================================ ::]
+Other Bug
+
+http://www.ciamos.com/include/version.php
+this file Should not be there is too dangerous an attacker may find that info
+very usefull
+You need to clean up this mess
+
+- References
+--------------------------------------------------------
+http://neosecurityteam.net/Advisories/Advisory-12.txt
+
+- Credits
+-------------------------------------------------
+Discovered by HaCkZaTaN <hck_zatan@hotmail.com>
+
+[N]eo [S]ecurity [T]eam [NST]® - http://neosecurityteam.net/
+
+Got Questions? http://neosecurityteam.net/
+
+Irc.InfoGroup.cl #neosecurityteam
+
+- Greets
+--------------------------------------------------------
+           Paisterist
+           T0wn3r
+           LINUX
+	   Heap
+           Nitrous
+           CrashCool
+           eL_mEsIaS
+           Makoki
+           KingMetal
+
+           And my Colombian people
+
+	@@@@'''@@@@'@@@@@@@@@'@@@@@@@@@@@
+	'@@@@@''@@'@@@''''''''@@''@@@''@@
+	'@@'@@@@@@''@@@@@@@@@'''''@@@
+	'@@'''@@@@'''''''''@@@''''@@@
+	@@@@''''@@'@@@@@@@@@@''''@@@@@
+*/

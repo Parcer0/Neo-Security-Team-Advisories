@@ -1,0 +1,71 @@
+/*
+--------------------------------------------------------
+[N]eo [S]ecurity [T]eam [NST]® - Advisory #02 - 30/12/04
+--------------------------------------------------------
+Program:  NASM, the Netwide Assembler.
+Homepage:  http://nasm.sourceforge.net
+Vulnerable Versions: NASM 0.98.38
+Risk: Low!!
+Impact: fwrite() function in nasmlib.c doesn't use the exact 
+        bytes when it is use.
+        strcpy() is use in several times
+        in which it'll be better strncpy()
+---------------------------------------------------------
+
+- Description
+---------------------------------------------------------
+Many many developers all over the net respect NASM for what it is
+- a widespread (thus netwide), portable (thus netwide!), very
+flexible and mature assembler tool with support for many output
+formats (thus netwide!!).
+
+- Details
+---------------------------------------------------------
+root@NST:/home/h4ck# /usr/bin/nasm `perl -e 'print "A" x 4096'`
+Segmentation fault
+root@NST:/home/h4ck# gdb nasm
+GNU gdb 6.3
+Copyright 2004 Free Software Foundation, Inc.
+GDB is free software, covered by the GNU General Public License, and you are
+welcome to change it and/or distribute copies of it under certain conditions.
+Type "show copying" to see the conditions.
+There is absolutely no warranty for GDB.  Type "show warranty" for details.
+This GDB was configured as "i486-slackware-linux"...(no debugging symbols found)
+Using host libthread_db library "/lib/libthread_db.so.1".
+
+(gdb) r `perl -e 'print "A" x 4096'`
+Starting program: /usr/bin/nasm `perl -e 'print "A" x 4096'`
+(no debugging symbols found)
+(no debugging symbols found)
+
+Program received signal SIGSEGV, Segmentation fault.
+0x40072ce7 in fwrite () from /lib/libc.so.6
+(gdb)  i r ebp eip esp
+ebp            0xbffe7098       0xbffe7098
+eip            0x40072ce7       0x40072ce7
+esp            0xbffe7068       0xbffe7068
+
+Well i would done something about it but it's useless 'eip' wasn't overwritten
+by "A"x 4096
+
+- Tested
+---------------------------------------------------------
+I have done minimal testing on this.
+Slackware 10.0
+ 
+- Solutions
+--------------------------------------------------------
+Not Yet or i don't know xD
+
+- References
+--------------------------------------------------------
+http://neosecurityteam.net/Advisories/Advisory-02.txt
+
+
+- Credits
+-------------------------------------------------
+Discovered by HaCkZaTaN <hck_zatan@hotmail.com>
+
+[N]eo [S]ecurity [T]eam [NST]® - http://neosecurityteam.net/
+
+Got Questions? http://neosecurityteam.net/foros/

